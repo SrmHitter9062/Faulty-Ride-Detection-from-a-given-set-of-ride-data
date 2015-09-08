@@ -1,0 +1,30 @@
+Example for below URL
+https://maps.googleapis.com/maps/api/distancematrix/json?origins=30.727539,76.754992&destinations=30.699249,76.784705&key=AIzaSyCjaXIg4FzJl_bG-uFzX9HcLMgEyfJvDoo
+
+we get data from google API
+{
+   "destination_addresses" : [
+      "1307, Purv Marg, 31B, Sector 31, Chandigarh, Chandigarh 160030, India"
+   ],
+   "origin_addresses" : [
+      "3423, Jan Marg, 35D, Sector 35, Chandigarh, Chandigarh 160022, India"
+   ],
+   "rows" : [
+      {
+         "elements" : [
+            {
+               "distance" : {
+                  "text" : "5.5 km",
+                  "value" : 5473
+               },
+               "duration" : {
+                  "text" : "13 mins",
+                  "value" : 758
+               },
+               "status" : "OK"
+            }
+         ]
+      }
+   ],
+   "status" : "OK"
+}
