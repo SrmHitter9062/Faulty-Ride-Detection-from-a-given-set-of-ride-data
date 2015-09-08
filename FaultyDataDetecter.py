@@ -1,56 +1,57 @@
 import urllib2
-import json  # import this for json formatting  
+import json  
 
-def hellofun():
+def DetectFaultyData():
 	response = urllib2.urlopen("https://www.test.jugnoo.in:8300/fetch_data")
 
-	#temp = open('engagement_data.txt', 'r')
 	html = response.read()
 	res = []
-	
-	#print html;
-	tmp = json.loads(html)   #encoding
-	for k in tmp:
+
+	JSONtoDict = json.loads(html)   #converting JSON into normal dictionary
+	#print JSONtoDict
+	for k in JSONtoDict:
 		loop_data = {}
-		dis1 = k['metered_distance']
-		tim1 = k['metered_time']
-		url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="+str(k["pickup_latitude"])+","+str(k["pickup_longitude"])+"&destinations="+str(k["drop_latitude"])+","+str(k["drop_longitude"])
-		#print url
-		#https://maps.googleapis.com/maps/api/distancematrix/json?origins=30.727539,76.754992&destinations=30.699249,76.784705&key=AIzaSyCjaXIg4FzJl_bG-uFzX9HcLMgEyfJvDoo
-		
-		#key=AIzaSyCjaXIg4FzJl_bG-uFzX9HcLMgEyfJvDoo
-		response = urllib2.urlopen(url)
-		htm = response.read()
-		goog = json.loads(htm)
-		x =  goog[u'rows']
+
 		loop_data['engagement_id'] = k['engagement_id']
-		loop_data['metered_distance'] = dis1
-		loop_data['metered_time'] = tim1
-		for q in x:
+		loop_data['metered_distance'] =  k['metered_distance']
+		loop_data['metered_time'] = k['metered_time']
+		#Getting estimated data from google API
+
+		#https://maps.googleapis.com/maps/api/distancematrix/json?origins=30.727539,76.754992&destinations=30.699249,76.784705&key=AIzaSyCjaXIg4FzJl_bG-uFzX9HcLMgEyfJvDoo
+		#key=AIzaSyCjaXIg4FzJl_bG-uFzX9HcLMgEyfJvDoo
+		url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins="+str(k["pickup_latitude"])+","+str(k["pickup_longitude"])+"&destinations="+str(k["drop_latitude"])+","+str(k["drop_longitude"])
+		
+		response = urllib2.urlopen(url)
+		TempHtmlData = response.read()
+		TempDict = json.loads(TempHtmlData)
+
+		RowCount =  TempDict[u'rows']
+		
+		dis1 = k['metered_distance']
+		time1 = k['metered_time']
+
+		for q in RowCount:
 			#print q;
 			#goog = json.loads(q)
 			g = q[u'elements']
 			for f in g:
-				dis =  f['distance']['value']
-				dur =  f['duration']['value']
-				#print "engagement_id : " + str(k['engagement_id'])
-				#print "metered_distance :" + str(dis1)
-				#print "metered_time : " + str(tim1)
-				#print "estimated goog dis in kms: "+ str(dis/1000)
-				#print "estimated goog time in secs : "+ str(dur)
-				dis_dev = abs(((dis/1000.0001)/(dis1+.01))*100 - 100)  # find dist_deviation
-				time_dev = abs((dur/(tim1*60.0+.0001))*100 - 100)  # find time deviation
+				Estimated_dist =  f['distance']['value']  # estimated distance
+				Estimated_dur =  f['duration']['value']   # estimated time
+				# find dist_deviation
+				dist_dev = abs(((Estimated_dist/1000.0001)/(dis1+.01))*100 - 100)  
+				# find time deviation
+				time_dev = abs((Estimated_dur/(time1*60.0+.0001))*100 - 100)  
 
-				#print dis_dev,time_dev   # print deviation
+				#print dis_dev,time_dev 
 
-				loop_data['time_deviation'] = str(dis_dev)+"%"
+				loop_data['time_deviation'] = str(dist_dev)+"%"
 				loop_data['distance_deviation'] = str(time_dev)+"%"
 
 				
-		if(dis_dev > 15 or time_dev > 20):   #  take any threshold  i took if distance error > 15 % or time error > 20 % then its faulty
-			res.append(loop_data)   # put this set to res  
+		if(dist_dev > 15 or time_dev > 20):   #  if distance error > 15 % or time error > 20 % then its faulty
+			res.append(loop_data)   # put this set to result set  
 
-	res_data = json.dumps(res)  # decoding
-	return res_data;  
+	res_data = json.dumps(res)  # convert list pr dict to JSON
+	return res_data  
 
-print hellofun()   #  print all faulty sets in json format  
+print DetectFaultyData()   
